@@ -192,6 +192,12 @@
       color: var(--accent);
     }
 
+    .speed-stepper {
+      display: none;
+      align-items: center;
+      gap: 3px;
+    }
+
     .font-control {
       display: inline-grid;
       grid-template-columns: 36px auto 36px;
@@ -516,17 +522,26 @@
         font-size: 12px;
       }
 
+      .control-group.import,
       body:not(.mobile-reading) .control-group.end {
         display: none;
       }
 
       body.mobile-reading .controls {
-        grid-template-columns: minmax(0, 1fr) 74px;
+        grid-template-columns: minmax(0, 1fr) 76px;
         align-items: center;
+      }
+
+      body:not(.mobile-reading) .controls {
+        grid-template-columns: 1fr;
       }
 
       .control-group {
         gap: 4px;
+      }
+
+      .control-group.center > button {
+        flex: 0 0 auto;
       }
 
       .file-label,
@@ -537,36 +552,52 @@
       }
 
       button.primary {
-        min-width: 50px;
+        min-width: 28px;
+        width: 30px;
+        height: 46px;
+        padding: 2px 0;
+        line-height: 1.05;
+        writing-mode: vertical-rl;
+        letter-spacing: 0;
       }
 
       .speed {
-        grid-template-columns: auto 1fr auto;
-        gap: 5px;
+        display: none;
       }
 
-      .speed label {
+      .speed-stepper {
+        display: inline-flex;
+      }
+
+      .speed-stepper .icon-button {
+        width: 24px;
+        min-width: 24px;
+        height: 24px;
+        min-height: 24px;
+        font-size: 11px;
+      }
+
+      .speed-stepper .speed-value {
+        width: 36px;
         font-size: 12px;
-      }
-
-      .speed-value {
-        width: 42px;
+        text-align: center;
       }
 
       .font-control {
-        grid-template-columns: 26px 28px 26px;
-        gap: 3px;
+        grid-template-columns: 22px 22px 22px;
+        gap: 2px;
       }
 
       .icon-button {
-        width: 26px;
-        min-width: 26px;
-        font-size: 11px;
+        width: 22px;
+        min-width: 22px;
+        min-height: 24px;
+        font-size: 10px;
       }
 
       .font-readout {
-        min-width: 28px;
-        font-size: 11px;
+        min-width: 22px;
+        font-size: 10px;
       }
 
       input[type="range"] {
@@ -589,7 +620,7 @@
       }
 
       .progress-wrap {
-        grid-template-columns: 44px 25px;
+        grid-template-columns: 46px 25px;
         gap: 5px;
       }
 
@@ -599,7 +630,7 @@
       }
 
       .mobile-tabs {
-        top: 81px;
+        top: 76px;
         gap: 5px;
         padding: 6px 10px 0;
       }
@@ -647,16 +678,16 @@
       }
 
       body.mobile-reading .reader {
-        min-height: calc(100dvh - 142px);
-        height: calc(100dvh - 142px);
+        min-height: calc(100dvh - 136px);
+        height: calc(100dvh - 136px);
       }
 
       body.mobile-reading .reader-pane {
-        min-height: calc(100dvh - 142px);
+        min-height: calc(100dvh - 136px);
       }
 
       body.mobile-reading .mobile-tabs {
-        top: 54px;
+        top: 49px;
       }
 
       .pane-title {
@@ -670,7 +701,6 @@
 <body>
   <div class="app">
     <header>
-      <h1>快读领读器</h1>
       <div class="stats">
         <span>字数 <span class="stat-strong" id="charCount">0</span></span>
         <span>预计 <span class="stat-strong" id="eta">0:00</span></span>
@@ -695,6 +725,11 @@
           <label for="speed">倍速</label>
           <input id="speed" type="range" min="0.5" max="10" step="0.1" value="2">
           <output class="speed-value" id="speedValue">2.0x</output>
+        </div>
+        <div class="speed-stepper" aria-label="倍速调节">
+          <button class="icon-button" id="speedDown" type="button" title="降低倍速">-</button>
+          <output class="speed-value" id="speedStepValue">2.0x</output>
+          <button class="icon-button" id="speedUp" type="button" title="提高倍速">+</button>
         </div>
         <div class="font-control" aria-label="字号调节">
           <button class="icon-button" id="fontDown" type="button" title="缩小字号">A-</button>
@@ -772,6 +807,9 @@
       reset: document.getElementById("reset"),
       speed: document.getElementById("speed"),
       speedValue: document.getElementById("speedValue"),
+      speedDown: document.getElementById("speedDown"),
+      speedUp: document.getElementById("speedUp"),
+      speedStepValue: document.getElementById("speedStepValue"),
       progress: document.getElementById("progress"),
       progressFill: document.getElementById("progressFill"),
       percent: document.getElementById("percent"),
@@ -1043,6 +1081,7 @@
       els.percent.textContent = `${pct}%`;
       els.progress.setAttribute("aria-valuenow", String(pct));
       els.speedValue.textContent = `${Number(els.speed.value).toFixed(1)}x`;
+      els.speedStepValue.textContent = `${Number(els.speed.value).toFixed(1)}x`;
       const fontSize = clamp(Number(els.readerSize.value) || 26, 16, 48);
       els.readerSize.value = String(fontSize);
       els.fontReadout.textContent = String(fontSize);
@@ -1109,6 +1148,14 @@
       }
     });
     els.speed.addEventListener("input", updateStats);
+    els.speedDown.addEventListener("click", () => {
+      els.speed.value = String(clamp(Number(els.speed.value) - 0.5, 0.5, 10));
+      updateStats();
+    });
+    els.speedUp.addEventListener("click", () => {
+      els.speed.value = String(clamp(Number(els.speed.value) + 0.5, 0.5, 10));
+      updateStats();
+    });
     els.baseCpm.addEventListener("input", updateStats);
     els.readerSize.addEventListener("input", updateStats);
     els.fontDown.addEventListener("click", () => {
