@@ -1,0 +1,19 @@
+{
+  "name": "快读领读器",
+  "short_name": "快读",
+  "description": "用进度高亮带动阅读速度的快读训练工具。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f8fb",
+  "theme_color": "#1f7a6d",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
