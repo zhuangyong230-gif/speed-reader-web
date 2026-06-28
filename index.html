@@ -14,17 +14,18 @@
   <style>
     :root {
       color-scheme: light;
-      --bg: #f7f8fb;
+      --bg: #f4f6f8;
       --panel: #ffffff;
-      --ink: #18202d;
+      --ink: #111827;
       --muted: #637083;
       --line: #d9dee8;
       --accent: #1f7a6d;
       --accent-2: #d94f3d;
-      --focus: #fff1a8;
-      --sentence: #e8f4f1;
+      --focus: #ffe45e;
+      --sentence: #dff6ee;
+      --paragraph: #f0fbf8;
       --focus-ring: rgba(31, 122, 109, 0.18);
-      --shadow: 0 16px 36px rgba(24, 32, 45, 0.10);
+      --shadow: 0 10px 24px rgba(24, 32, 45, 0.08);
     }
 
     * {
@@ -58,7 +59,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      padding: 18px clamp(16px, 4vw, 42px) 12px;
+      padding: 12px clamp(16px, 4vw, 42px) 10px;
       border-bottom: 1px solid rgba(217, 222, 232, 0.75);
       background: rgba(255, 255, 255, 0.78);
       backdrop-filter: blur(14px);
@@ -69,7 +70,7 @@
 
     h1 {
       margin: 0;
-      font-size: clamp(20px, 3vw, 30px);
+      font-size: clamp(19px, 2.4vw, 26px);
       line-height: 1.1;
       letter-spacing: 0;
     }
@@ -93,11 +94,11 @@
       grid-template-columns: minmax(220px, 1fr) minmax(280px, 520px) minmax(220px, 1fr);
       align-items: center;
       gap: 14px;
-      padding: 14px clamp(16px, 4vw, 42px);
+      padding: 10px clamp(16px, 4vw, 42px);
       background: var(--panel);
       border-bottom: 1px solid var(--line);
       position: sticky;
-      top: 61px;
+      top: 49px;
       z-index: 9;
     }
 
@@ -106,6 +107,10 @@
       align-items: center;
       gap: 10px;
       min-width: 0;
+    }
+
+    .control-group.import {
+      transition: opacity 160ms ease, transform 160ms ease;
     }
 
     .control-group.center {
@@ -122,10 +127,10 @@
       align-items: center;
       justify-content: center;
       gap: 7px;
-      min-height: 38px;
+      min-height: 36px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 0 13px;
+      padding: 0 12px;
       background: #fff;
       color: var(--ink);
       cursor: pointer;
@@ -148,7 +153,7 @@
       background: var(--accent);
       border-color: var(--accent);
       color: #fff;
-      min-width: 90px;
+      min-width: 82px;
       font-weight: 700;
     }
 
@@ -181,10 +186,33 @@
     }
 
     .speed-value {
-      width: 62px;
+      width: 58px;
       text-align: right;
       font-weight: 800;
       color: var(--accent);
+    }
+
+    .font-control {
+      display: inline-grid;
+      grid-template-columns: 36px auto 36px;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .icon-button {
+      width: 36px;
+      min-width: 36px;
+      padding: 0;
+      font-weight: 800;
+    }
+
+    .font-readout {
+      min-width: 48px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
     }
 
     .progress-wrap {
@@ -305,11 +333,13 @@
     .reader {
       height: calc(100vh - 170px);
       overflow: auto;
-      padding: clamp(22px, 4vw, 46px);
+      padding: clamp(24px, 4vw, 46px);
       scroll-behavior: smooth;
       font-size: var(--reader-size, 26px);
-      line-height: 2.05;
+      line-height: 1.75;
       letter-spacing: 0;
+      max-width: 42em;
+      margin: 0 auto;
     }
 
     .empty {
@@ -328,22 +358,30 @@
     }
 
     .token.done {
-      color: #96a0af;
+      color: #8b96a6;
+    }
+
+    .token.paragraph-active {
+      background: var(--paragraph);
+      box-shadow: 0 0 0 5px var(--paragraph);
     }
 
     .token.sentence-active {
       background: var(--sentence);
-      box-shadow: 0 0 0 3px var(--sentence);
+      box-shadow: 0 0 0 4px var(--sentence);
     }
 
     .token.done.sentence-active {
-      color: #5f6f7f;
+      color: #415061;
     }
 
     .token.active {
-      color: #111827;
+      color: #0f172a;
       background: var(--focus);
-      box-shadow: 0 0 0 4px rgba(255, 241, 168, 0.62);
+      box-shadow:
+        0 0 0 2px #f59e0b,
+        0 0 0 7px rgba(255, 228, 94, 0.58);
+      font-weight: 800;
     }
 
     .token.punctuation {
@@ -378,15 +416,15 @@
       header {
         align-items: flex-start;
         flex-direction: column;
-        gap: 8px;
-        padding: 14px 16px 10px;
+        gap: 4px;
+        padding: 9px 16px 7px;
       }
 
       .controls {
-        top: 84px;
+        top: 65px;
         grid-template-columns: 1fr;
-        gap: 10px;
-        padding: 10px 16px 12px;
+        gap: 8px;
+        padding: 8px 16px 9px;
       }
 
       .control-group,
@@ -403,7 +441,7 @@
       .mobile-tabs {
         display: flex;
         position: sticky;
-        top: 261px;
+        top: 223px;
         z-index: 8;
       }
 
@@ -429,6 +467,14 @@
       body:not(.mobile-reading) .reader-pane {
         display: none;
       }
+
+      body.mobile-reading .control-group.import {
+        display: none;
+      }
+
+      body.mobile-reading .mobile-tabs {
+        top: 182px;
+      }
     }
 
     @media (max-width: 560px) {
@@ -441,13 +487,26 @@
       }
 
       h1 {
-        font-size: 24px;
+        font-size: 18px;
+        white-space: nowrap;
       }
 
       .stats {
-        flex-wrap: wrap;
-        gap: 6px 10px;
-        font-size: 12px;
+        flex-wrap: nowrap;
+        gap: 8px;
+        font-size: 10.5px;
+        overflow: hidden;
+      }
+
+      .stats span {
+        white-space: nowrap;
+      }
+
+      header {
+        align-items: center;
+        flex-direction: row;
+        gap: 10px;
+        padding: 7px 14px 6px;
       }
 
       .control-group {
@@ -456,8 +515,12 @@
 
       .file-label,
       button {
-        min-height: 42px;
+        min-height: 36px;
         padding: 0 10px;
+      }
+
+      button.primary {
+        min-width: 74px;
       }
 
       .speed {
@@ -465,7 +528,7 @@
       }
 
       .progress {
-        height: 16px;
+        height: 12px;
       }
 
       .settings {
@@ -489,14 +552,24 @@
 
       .reader {
         font-size: var(--reader-size-mobile, 22px);
-        padding: 22px 16px 34px;
-        min-height: calc(100dvh - 318px);
-        height: calc(100dvh - 318px);
-        line-height: 1.92;
+        padding: 20px 17px 34px;
+        min-height: calc(100dvh - 276px);
+        height: calc(100dvh - 276px);
+        line-height: 1.72;
+        max-width: 26em;
       }
 
       .reader-pane {
-        min-height: calc(100dvh - 318px);
+        min-height: calc(100dvh - 276px);
+      }
+
+      body.mobile-reading .reader {
+        min-height: calc(100dvh - 198px);
+        height: calc(100dvh - 198px);
+      }
+
+      body.mobile-reading .reader-pane {
+        min-height: calc(100dvh - 198px);
       }
 
       .pane-title {
@@ -518,7 +591,7 @@
     </header>
 
     <section class="controls" aria-label="阅读控制">
-      <div class="control-group">
+      <div class="control-group import">
         <label class="file-label" title="上传 TXT">
           <span>上传</span>
           <input id="fileInput" type="file" accept=".txt,text/plain">
@@ -534,6 +607,11 @@
           <label for="speed">倍速</label>
           <input id="speed" type="range" min="0.5" max="10" step="0.1" value="2">
           <output class="speed-value" id="speedValue">2.0x</output>
+        </div>
+        <div class="font-control" aria-label="字号调节">
+          <button class="icon-button" id="fontDown" type="button" title="缩小字号">A-</button>
+          <output class="font-readout" id="fontReadout">26</output>
+          <button class="icon-button" id="fontUp" type="button" title="放大字号">A+</button>
         </div>
       </div>
 
@@ -619,14 +697,19 @@
       eta: document.getElementById("eta"),
       position: document.getElementById("position"),
       baseCpm: document.getElementById("baseCpm"),
-      readerSize: document.getElementById("readerSize")
+      readerSize: document.getElementById("readerSize"),
+      fontDown: document.getElementById("fontDown"),
+      fontUp: document.getElementById("fontUp"),
+      fontReadout: document.getElementById("fontReadout")
     };
 
     const state = {
       tokens: [],
       spans: [],
       sentenceIds: [],
+      paragraphIds: [],
       activeSentence: -1,
+      activeParagraph: -1,
       index: 0,
       running: false,
       raf: 0,
@@ -678,7 +761,9 @@
       els.reader.innerHTML = "";
       state.spans = [];
       state.sentenceIds = assignSentenceIds(state.tokens);
+      state.paragraphIds = assignParagraphIds(state.tokens);
       state.activeSentence = -1;
+      state.activeParagraph = -1;
 
       if (!state.tokens.length) {
         els.reader.innerHTML = '<div class="empty">粘贴文本后点击生成</div>';
@@ -697,6 +782,7 @@
         span.textContent = token;
         span.dataset.index = String(i);
         span.dataset.sentence = String(state.sentenceIds[i]);
+        span.dataset.paragraph = String(state.paragraphIds[i]);
         span.addEventListener("click", () => jumpTo(i));
         state.spans[i] = span;
         frag.appendChild(span);
@@ -723,6 +809,21 @@
         if (token !== "\n" && !punctuation.test(token)) hasContent = true;
         if ((token === "\n" && hasContent) || sentenceEnd.test(token)) {
           sentence++;
+          hasContent = false;
+        }
+      });
+      return ids;
+    }
+
+    function assignParagraphIds(tokens) {
+      const ids = [];
+      let paragraph = 0;
+      let hasContent = false;
+      tokens.forEach((token, i) => {
+        ids[i] = paragraph;
+        if (token !== "\n" && !punctuation.test(token)) hasContent = true;
+        if (token === "\n" && hasContent) {
+          paragraph++;
           hasContent = false;
         }
       });
@@ -802,6 +903,7 @@
 
       const current = state.spans[state.index] || findNextSpan(state.index) || findPreviousSpan(state.index);
       if (current) {
+        setActiveParagraph(Number(current.dataset.paragraph));
         setActiveSentence(Number(current.dataset.sentence));
         current.classList.add("active");
         current.scrollIntoView({ block: "center", inline: "nearest", behavior: immediate ? "auto" : "smooth" });
@@ -816,6 +918,15 @@
         span.classList.toggle("sentence-active", Number(span.dataset.sentence) === sentenceId);
       });
       state.activeSentence = sentenceId;
+    }
+
+    function setActiveParagraph(paragraphId) {
+      if (paragraphId === state.activeParagraph) return;
+      state.spans.forEach(span => {
+        if (!span) return;
+        span.classList.toggle("paragraph-active", Number(span.dataset.paragraph) === paragraphId);
+      });
+      state.activeParagraph = paragraphId;
     }
 
     function findNextSpan(index) {
@@ -844,8 +955,11 @@
       els.percent.textContent = `${pct}%`;
       els.progress.setAttribute("aria-valuenow", String(pct));
       els.speedValue.textContent = `${Number(els.speed.value).toFixed(1)}x`;
-      document.documentElement.style.setProperty("--reader-size", `${clamp(Number(els.readerSize.value) || 26, 16, 48)}px`);
-      document.documentElement.style.setProperty("--reader-size-mobile", `${clamp(Number(els.readerSize.value) || 22, 16, 38)}px`);
+      const fontSize = clamp(Number(els.readerSize.value) || 26, 16, 48);
+      els.readerSize.value = String(fontSize);
+      els.fontReadout.textContent = String(fontSize);
+      document.documentElement.style.setProperty("--reader-size", `${fontSize}px`);
+      document.documentElement.style.setProperty("--reader-size-mobile", `${clamp(fontSize, 16, 38)}px`);
     }
 
     function formatTime(totalSeconds) {
@@ -909,6 +1023,14 @@
     els.speed.addEventListener("input", updateStats);
     els.baseCpm.addEventListener("input", updateStats);
     els.readerSize.addEventListener("input", updateStats);
+    els.fontDown.addEventListener("click", () => {
+      els.readerSize.value = String(clamp((Number(els.readerSize.value) || 26) - 2, 16, 48));
+      updateStats();
+    });
+    els.fontUp.addEventListener("click", () => {
+      els.readerSize.value = String(clamp((Number(els.readerSize.value) || 26) + 2, 16, 48));
+      updateStats();
+    });
     els.progress.addEventListener("click", event => progressToIndex(event.clientX));
     els.progress.addEventListener("keydown", event => {
       if (!state.tokens.length) return;
