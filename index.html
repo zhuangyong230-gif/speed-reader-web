@@ -10,7 +10,7 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
-  <meta name="app-version" content="v6">
+  <meta name="app-version" content="v7">
   <title>快读领读器</title>
   <style>
     :root {
@@ -524,12 +524,13 @@
       }
 
       .control-group.import,
+      .control-group.end,
       body:not(.mobile-reading) .control-group.end {
         display: none;
       }
 
       body.mobile-reading .controls {
-        grid-template-columns: minmax(0, 1fr) 58px;
+        grid-template-columns: 1fr;
         align-items: center;
       }
 
@@ -563,30 +564,31 @@
       }
 
       .speed {
-        display: none;
+        display: grid;
+        flex: 1 1 150px;
+        grid-template-columns: auto minmax(120px, 1fr) 40px;
+        gap: 5px;
+        min-width: 0;
       }
 
       .speed-stepper {
-        display: inline-flex;
+        display: none;
       }
 
-      .speed-stepper .icon-button {
-        width: 20px;
-        min-width: 20px;
-        height: 24px;
-        min-height: 24px;
-        font-size: 11px;
+      .speed label {
+        font-size: 12px;
       }
 
-      .speed-stepper .speed-value {
-        width: 34px;
-        font-size: 11px;
+      .speed-value {
+        width: 40px;
+        font-size: 12px;
         text-align: center;
       }
 
       .font-control {
-        grid-template-columns: 20px 18px 20px;
-        gap: 2px;
+        flex: 0 0 auto;
+        grid-template-columns: 24px 24px 24px;
+        gap: 3px;
         padding: 0 2px;
         border: 1px solid var(--line);
         border-radius: 6px;
@@ -594,18 +596,18 @@
       }
 
       .icon-button {
-        width: 20px;
-        min-width: 20px;
+        width: 24px;
+        min-width: 24px;
         min-height: 22px;
         border: 0;
         border-radius: 4px;
         padding: 0;
-        font-size: 9px;
+        font-size: 10px;
       }
 
       .font-readout {
-        min-width: 18px;
-        font-size: 10px;
+        min-width: 24px;
+        font-size: 11px;
       }
 
       input[type="range"] {
@@ -686,12 +688,12 @@
       }
 
       body.mobile-reading .reader {
-        min-height: calc(100dvh - 136px);
-        height: calc(100dvh - 136px);
+        min-height: calc(100dvh - 132px);
+        height: calc(100dvh - 132px);
       }
 
       body.mobile-reading .reader-pane {
-        min-height: calc(100dvh - 136px);
+        min-height: calc(100dvh - 132px);
       }
 
       body.mobile-reading .mobile-tabs {
@@ -741,7 +743,7 @@
         </div>
         <div class="font-control" aria-label="字号调节">
           <button class="icon-button" id="fontDown" type="button" title="缩小字号">A-</button>
-          <output class="font-readout" id="fontReadout">26</output>
+          <output class="font-readout" id="fontReadout">18</output>
           <button class="icon-button" id="fontUp" type="button" title="放大字号">A+</button>
         </div>
       </div>
@@ -1226,7 +1228,7 @@
 
     if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=7").catch(() => {});
       });
     }
   </script>
