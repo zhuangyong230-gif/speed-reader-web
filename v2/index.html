@@ -10,7 +10,7 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
-  <meta name="app-version" content="v2.1">
+  <meta name="app-version" content="v2.3">
   <title>快读领读器</title>
   <style>
     :root {
@@ -370,6 +370,7 @@
 
     .sentence-wrap {
       border-radius: 5px;
+      padding: 0 2px 1px;
       -webkit-box-decoration-break: clone;
       box-decoration-break: clone;
       transition: background 80ms linear, box-shadow 80ms linear;
@@ -382,7 +383,12 @@
 
     .sentence-wrap.sentence-active {
       background: var(--sentence);
+      background-color: var(--sentence);
       box-shadow: 0 0 0 3px var(--sentence);
+    }
+
+    .token.sentence-active:not(.active) {
+      background-image: linear-gradient(to top, rgba(31, 122, 109, 0.16) 42%, transparent 42%);
     }
 
     .token.done.sentence-active {
@@ -1270,7 +1276,7 @@
 
     if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=2.1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=2.3").catch(() => {});
       });
     }
   </script>
