@@ -487,15 +487,15 @@
       }
 
       h1 {
-        font-size: 18px;
-        white-space: nowrap;
+        display: none;
       }
 
       .stats {
         flex-wrap: nowrap;
-        gap: 8px;
-        font-size: 10.5px;
+        gap: 7px;
+        font-size: 10px;
         overflow: hidden;
+        width: 100%;
       }
 
       .stats span {
@@ -505,76 +505,164 @@
       header {
         align-items: center;
         flex-direction: row;
-        gap: 10px;
-        padding: 7px 14px 6px;
+        gap: 0;
+        padding: 4px 10px;
+      }
+
+      .controls {
+        top: 23px;
+        gap: 4px;
+        padding: 4px 10px 5px;
+        font-size: 12px;
+      }
+
+      body:not(.mobile-reading) .control-group.end {
+        display: none;
+      }
+
+      body.mobile-reading .controls {
+        grid-template-columns: minmax(0, 1fr) 74px;
+        align-items: center;
       }
 
       .control-group {
-        gap: 8px;
+        gap: 4px;
       }
 
       .file-label,
       button {
-        min-height: 36px;
-        padding: 0 10px;
+        min-height: 24px;
+        border-radius: 5px;
+        padding: 0 6px;
       }
 
       button.primary {
-        min-width: 74px;
+        min-width: 50px;
       }
 
       .speed {
         grid-template-columns: auto 1fr auto;
+        gap: 5px;
+      }
+
+      .speed label {
+        font-size: 12px;
+      }
+
+      .speed-value {
+        width: 42px;
+      }
+
+      .font-control {
+        grid-template-columns: 26px 28px 26px;
+        gap: 3px;
+      }
+
+      .icon-button {
+        width: 26px;
+        min-width: 26px;
+        font-size: 11px;
+      }
+
+      .font-readout {
+        min-width: 28px;
+        font-size: 11px;
+      }
+
+      input[type="range"] {
+        height: 18px;
+      }
+
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 4px;
+        border-radius: 999px;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        width: 16px;
+        height: 16px;
+        margin-top: -6px;
       }
 
       .progress {
-        height: 12px;
+        height: 7px;
+      }
+
+      .progress-wrap {
+        grid-template-columns: 44px 25px;
+        gap: 5px;
+      }
+
+      .percent {
+        width: 30px;
+        font-size: 10px;
+      }
+
+      .mobile-tabs {
+        top: 81px;
+        gap: 5px;
+        padding: 6px 10px 0;
+      }
+
+      .mobile-tab {
+        min-height: 26px;
+        font-size: 13px;
       }
 
       .settings {
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 6px;
+        font-size: 12px;
       }
 
       .settings input {
-        width: 68px;
+        width: 54px;
+        height: 28px;
+        border-radius: 6px;
+        padding: 0 7px;
       }
 
       textarea {
-        min-height: calc(100dvh - 392px);
-        font-size: 17px;
-        line-height: 1.72;
+        min-height: calc(100dvh - 250px);
+        font-size: 16px;
+        line-height: 1.68;
+        padding: 12px;
       }
 
       .input-pane {
-        min-height: calc(100dvh - 318px);
+        min-height: calc(100dvh - 186px);
       }
 
       .reader {
         font-size: var(--reader-size-mobile, 22px);
         padding: 20px 17px 34px;
-        min-height: calc(100dvh - 276px);
-        height: calc(100dvh - 276px);
+        min-height: calc(100dvh - 186px);
+        height: calc(100dvh - 186px);
         line-height: 1.72;
         max-width: 26em;
       }
 
       .reader-pane {
-        min-height: calc(100dvh - 276px);
+        min-height: calc(100dvh - 186px);
       }
 
       body.mobile-reading .reader {
-        min-height: calc(100dvh - 198px);
-        height: calc(100dvh - 198px);
+        min-height: calc(100dvh - 142px);
+        height: calc(100dvh - 142px);
       }
 
       body.mobile-reading .reader-pane {
-        min-height: calc(100dvh - 198px);
+        min-height: calc(100dvh - 142px);
+      }
+
+      body.mobile-reading .mobile-tabs {
+        top: 54px;
       }
 
       .pane-title {
-        align-items: flex-start;
-        flex-direction: column;
+        align-items: center;
+        flex-direction: row;
+        padding: 7px 9px;
       }
     }
   </style>
