@@ -10,7 +10,7 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
-  <meta name="app-version" content="v7">
+  <meta name="app-version" content="v9">
   <title>快读领读器</title>
   <style>
     :root {
@@ -22,9 +22,9 @@
       --line: #d9dee8;
       --accent: #1f7a6d;
       --accent-2: #d94f3d;
-      --focus: #ffe45e;
-      --sentence: #dff6ee;
-      --paragraph: #f0fbf8;
+      --focus: #ffe16a;
+      --sentence: rgba(31, 122, 109, 0.10);
+      --paragraph: transparent;
       --focus-ring: rgba(31, 122, 109, 0.18);
       --shadow: 0 10px 24px rgba(24, 32, 45, 0.08);
     }
@@ -343,7 +343,7 @@
       padding: clamp(24px, 4vw, 46px);
       scroll-behavior: smooth;
       font-size: var(--reader-size, 18px);
-      line-height: 1.75;
+      line-height: 1.62;
       letter-spacing: 0;
       max-width: 42em;
       margin: 0 auto;
@@ -359,8 +359,8 @@
     }
 
     .token {
-      border-radius: 5px;
-      padding: 1px 1px 2px;
+      border-radius: 3px;
+      padding: 0 1px 1px;
       transition: background 80ms linear, color 80ms linear, box-shadow 80ms linear;
     }
 
@@ -368,14 +368,21 @@
       color: #8b96a6;
     }
 
-    .token.paragraph-active {
-      background: var(--paragraph);
-      box-shadow: 0 0 0 5px var(--paragraph);
+    .sentence-wrap {
+      border-radius: 5px;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+      transition: background 80ms linear, box-shadow 80ms linear;
     }
 
-    .token.sentence-active {
+    .token.paragraph-active {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .sentence-wrap.sentence-active {
       background: var(--sentence);
-      box-shadow: 0 0 0 4px var(--sentence);
+      box-shadow: 0 0 0 3px var(--sentence);
     }
 
     .token.done.sentence-active {
@@ -386,8 +393,8 @@
       color: #0f172a;
       background: var(--focus);
       box-shadow:
-        0 0 0 2px #f59e0b,
-        0 0 0 7px rgba(255, 228, 94, 0.58);
+        0 0 0 1px #f59e0b,
+        0 0 0 4px rgba(255, 225, 106, 0.38);
       font-weight: 800;
     }
 
@@ -679,7 +686,7 @@
         padding: 20px 17px 34px;
         min-height: calc(100dvh - 186px);
         height: calc(100dvh - 186px);
-        line-height: 1.72;
+        line-height: 1.56;
         max-width: 26em;
       }
 
@@ -842,6 +849,7 @@
     const state = {
       tokens: [],
       spans: [],
+      sentenceEls: [],
       sentenceIds: [],
       paragraphIds: [],
       activeSentence: -1,
@@ -896,6 +904,7 @@
       state.carry = 0;
       els.reader.innerHTML = "";
       state.spans = [];
+      state.sentenceEls = [];
       state.sentenceIds = assignSentenceIds(state.tokens);
       state.paragraphIds = assignParagraphIds(state.tokens);
       state.activeSentence = -1;
@@ -908,20 +917,33 @@
       }
 
       const frag = document.createDocumentFragment();
+      let sentenceWrap = null;
+      let currentSentenceId = -1;
       state.tokens.forEach((token, i) => {
         if (token === "\n") {
           frag.appendChild(document.createElement("br"));
+          sentenceWrap = null;
+          currentSentenceId = -1;
           return;
+        }
+        const sentenceId = state.sentenceIds[i];
+        if (!sentenceWrap || sentenceId !== currentSentenceId) {
+          sentenceWrap = document.createElement("span");
+          sentenceWrap.className = "sentence-wrap";
+          sentenceWrap.dataset.sentence = String(sentenceId);
+          state.sentenceEls[sentenceId] = sentenceWrap;
+          frag.appendChild(sentenceWrap);
+          currentSentenceId = sentenceId;
         }
         const span = document.createElement("span");
         span.className = "token" + (punctuation.test(token) ? " punctuation" : "");
         span.textContent = token;
         span.dataset.index = String(i);
-        span.dataset.sentence = String(state.sentenceIds[i]);
+        span.dataset.sentence = String(sentenceId);
         span.dataset.paragraph = String(state.paragraphIds[i]);
         span.addEventListener("click", () => jumpTo(i));
         state.spans[i] = span;
-        frag.appendChild(span);
+        sentenceWrap.appendChild(span);
       });
       els.reader.appendChild(frag);
       setActive(0, true);
@@ -1049,6 +1071,10 @@
 
     function setActiveSentence(sentenceId) {
       if (sentenceId === state.activeSentence) return;
+      const previous = state.sentenceEls[state.activeSentence];
+      if (previous) previous.classList.remove("sentence-active");
+      const next = state.sentenceEls[sentenceId];
+      if (next) next.classList.add("sentence-active");
       state.spans.forEach(span => {
         if (!span) return;
         span.classList.toggle("sentence-active", Number(span.dataset.sentence) === sentenceId);
@@ -1228,7 +1254,7 @@
 
     if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=7").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=9").catch(() => {});
       });
     }
   </script>
