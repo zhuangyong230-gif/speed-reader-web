@@ -341,7 +341,7 @@
       overflow: auto;
       padding: clamp(24px, 4vw, 46px);
       scroll-behavior: smooth;
-      font-size: var(--reader-size, 26px);
+      font-size: var(--reader-size, 18px);
       line-height: 1.75;
       letter-spacing: 0;
       max-width: 42em;
@@ -528,7 +528,7 @@
       }
 
       body.mobile-reading .controls {
-        grid-template-columns: minmax(0, 1fr) 76px;
+        grid-template-columns: minmax(0, 1fr) 58px;
         align-items: center;
       }
 
@@ -570,33 +570,40 @@
       }
 
       .speed-stepper .icon-button {
-        width: 24px;
-        min-width: 24px;
+        width: 20px;
+        min-width: 20px;
         height: 24px;
         min-height: 24px;
         font-size: 11px;
       }
 
       .speed-stepper .speed-value {
-        width: 36px;
-        font-size: 12px;
+        width: 34px;
+        font-size: 11px;
         text-align: center;
       }
 
       .font-control {
-        grid-template-columns: 22px 22px 22px;
+        grid-template-columns: 20px 18px 20px;
         gap: 2px;
+        padding: 0 2px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #fff;
       }
 
       .icon-button {
-        width: 22px;
-        min-width: 22px;
-        min-height: 24px;
-        font-size: 10px;
+        width: 20px;
+        min-width: 20px;
+        min-height: 22px;
+        border: 0;
+        border-radius: 4px;
+        padding: 0;
+        font-size: 9px;
       }
 
       .font-readout {
-        min-width: 22px;
+        min-width: 18px;
         font-size: 10px;
       }
 
@@ -620,8 +627,8 @@
       }
 
       .progress-wrap {
-        grid-template-columns: 46px 25px;
-        gap: 5px;
+        grid-template-columns: 32px 22px;
+        gap: 4px;
       }
 
       .percent {
@@ -665,7 +672,7 @@
       }
 
       .reader {
-        font-size: var(--reader-size-mobile, 22px);
+        font-size: var(--reader-size-mobile, 18px);
         padding: 20px 17px 34px;
         min-height: calc(100dvh - 186px);
         height: calc(100dvh - 186px);
@@ -761,7 +768,7 @@
             <label for="baseCpm">基准字/分钟</label>
             <input id="baseCpm" type="number" min="100" max="2000" step="50" value="450">
             <label for="readerSize">字号</label>
-            <input id="readerSize" type="number" min="16" max="48" step="1" value="26">
+            <input id="readerSize" type="number" min="16" max="48" step="1" value="18">
           </div>
         </div>
         <textarea id="textInput" placeholder="把文章粘贴到这里，或上传 TXT 文件。"></textarea>
@@ -1082,7 +1089,7 @@
       els.progress.setAttribute("aria-valuenow", String(pct));
       els.speedValue.textContent = `${Number(els.speed.value).toFixed(1)}x`;
       els.speedStepValue.textContent = `${Number(els.speed.value).toFixed(1)}x`;
-      const fontSize = clamp(Number(els.readerSize.value) || 26, 16, 48);
+      const fontSize = clamp(Number(els.readerSize.value) || 18, 16, 48);
       els.readerSize.value = String(fontSize);
       els.fontReadout.textContent = String(fontSize);
       document.documentElement.style.setProperty("--reader-size", `${fontSize}px`);
@@ -1159,11 +1166,11 @@
     els.baseCpm.addEventListener("input", updateStats);
     els.readerSize.addEventListener("input", updateStats);
     els.fontDown.addEventListener("click", () => {
-      els.readerSize.value = String(clamp((Number(els.readerSize.value) || 26) - 2, 16, 48));
+      els.readerSize.value = String(clamp((Number(els.readerSize.value) || 18) - 2, 16, 48));
       updateStats();
     });
     els.fontUp.addEventListener("click", () => {
-      els.readerSize.value = String(clamp((Number(els.readerSize.value) || 26) + 2, 16, 48));
+      els.readerSize.value = String(clamp((Number(els.readerSize.value) || 18) + 2, 16, 48));
       updateStats();
     });
     els.progress.addEventListener("click", event => progressToIndex(event.clientX));
