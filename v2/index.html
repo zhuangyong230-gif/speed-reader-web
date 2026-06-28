@@ -10,7 +10,7 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
-  <meta name="app-version" content="v2.3">
+  <meta name="app-version" content="v2.8">
   <title>快读领读器</title>
   <style>
     :root {
@@ -387,7 +387,7 @@
       box-shadow: 0 0 0 3px var(--sentence);
     }
 
-    .token.sentence-active:not(.active) {
+    .sentence-wrap.sentence-active .token:not(.active) {
       background-image: linear-gradient(to top, rgba(31, 122, 109, 0.16) 42%, transparent 42%);
     }
 
@@ -702,15 +702,27 @@
 
       body.mobile-reading .reader {
         min-height: calc(100dvh - 132px);
-        height: calc(100dvh - 132px);
+        height: auto;
+        overflow: visible;
       }
 
       body.mobile-reading .reader-pane {
         min-height: calc(100dvh - 132px);
+        overflow: visible;
       }
 
       body.mobile-reading .mobile-tabs {
         top: 49px;
+      }
+
+      body.mobile-reading.is-playing header,
+      body.mobile-reading.is-playing .controls,
+      body.mobile-reading.is-playing .mobile-tabs {
+        display: none;
+      }
+
+      body.mobile-reading.is-playing main {
+        padding-top: 0;
       }
 
       .pane-title {
@@ -1016,6 +1028,7 @@
       if (!state.tokens.length) render();
       if (!state.tokens.length || state.running) return;
       state.running = true;
+      document.body.classList.add("is-playing");
       state.lastTime = performance.now();
       els.playPause.textContent = "暂停";
       state.raf = requestAnimationFrame(tick);
@@ -1023,6 +1036,7 @@
 
     function pause() {
       state.running = false;
+      document.body.classList.remove("is-playing");
       cancelAnimationFrame(state.raf);
       els.playPause.textContent = "开始";
     }
@@ -1056,18 +1070,14 @@
     }
 
     function setActive(index, immediate = false) {
+      const previousIndex = state.index;
       const old = state.spans[state.index];
       if (old) old.classList.remove("active");
       state.index = index;
-
-      state.spans.forEach((span, i) => {
-        if (!span) return;
-        span.classList.toggle("done", i < state.index);
-      });
+      updateDoneRange(previousIndex, state.index);
 
       const current = state.spans[state.index] || findNextSpan(state.index) || findPreviousSpan(state.index);
       if (current) {
-        setActiveParagraph(Number(current.dataset.paragraph));
         setActiveSentence(Number(current.dataset.sentence));
         current.classList.add("active");
         keepActiveInView(current, immediate);
@@ -1075,20 +1085,57 @@
       updateStats();
     }
 
+    function updateDoneRange(from, to) {
+      if (to > from) {
+        for (let i = from; i < to; i++) {
+          if (state.spans[i]) state.spans[i].classList.add("done");
+        }
+        return;
+      }
+      if (to < from) {
+        for (let i = to; i <= from; i++) {
+          if (state.spans[i]) state.spans[i].classList.remove("done");
+        }
+      }
+    }
+
     function keepActiveInView(element, immediate = false) {
+      if (usesPageScroll()) {
+        keepActiveInWindow(element);
+        return;
+      }
       const readerRect = els.reader.getBoundingClientRect();
       const activeRect = element.getBoundingClientRect();
-      const topGuard = readerRect.top + readerRect.height * 0.28;
-      const bottomGuard = readerRect.top + readerRect.height * 0.58;
+      const topGuard = readerRect.top + readerRect.height * (state.running ? 0.30 : 0.28);
+      const bottomGuard = readerRect.top + readerRect.height * (state.running ? 0.46 : 0.58);
       const mustScroll = activeRect.top < topGuard || activeRect.bottom > bottomGuard;
       if (!mustScroll && !immediate) return;
 
       const readerTop = els.reader.scrollTop;
-      const targetTop = readerTop + activeRect.top - readerRect.top - readerRect.height * 0.36;
-      els.reader.scrollTo({
-        top: Math.max(0, targetTop),
-        behavior: state.running || immediate ? "auto" : "smooth"
-      });
+      const targetRatio = state.running ? 0.34 : 0.40;
+      const targetTop = Math.max(0, readerTop + activeRect.top - readerRect.top - readerRect.height * targetRatio);
+      if (state.running || immediate) {
+        els.reader.scrollTop = targetTop;
+      } else {
+        els.reader.scrollTo({ top: targetTop, behavior: "smooth" });
+      }
+    }
+
+    function usesPageScroll() {
+      return window.matchMedia("(max-width: 940px)").matches;
+    }
+
+    function keepActiveInWindow(element) {
+      const activeRect = element.getBoundingClientRect();
+      const playing = document.body.classList.contains("is-playing");
+      const tabsRect = document.querySelector(".mobile-tabs").getBoundingClientRect();
+      const topLimit = playing ? 6 : Math.max(0, tabsRect.bottom + 12);
+      const bottomLimit = window.innerHeight * (playing ? 0.62 : 0.72);
+      const mustScroll = activeRect.top < topLimit || activeRect.bottom > bottomLimit || state.running;
+      if (!mustScroll) return;
+
+      const targetTop = Math.max(0, window.scrollY + activeRect.top - topLimit - (bottomLimit - topLimit) * (playing ? 0.04 : 0.24));
+      window.scrollTo({ top: targetTop, behavior: state.running ? "auto" : "smooth" });
     }
 
     function setActiveSentence(sentenceId) {
@@ -1097,10 +1144,6 @@
       if (previous) previous.classList.remove("sentence-active");
       const next = state.sentenceEls[sentenceId];
       if (next) next.classList.add("sentence-active");
-      state.spans.forEach(span => {
-        if (!span) return;
-        span.classList.toggle("sentence-active", Number(span.dataset.sentence) === sentenceId);
-      });
       state.activeSentence = sentenceId;
     }
 
@@ -1276,7 +1319,7 @@
 
     if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=2.3").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=2.8").catch(() => {});
       });
     }
   </script>
