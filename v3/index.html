@@ -1,0 +1,1325 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="快读领读器 V3">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#f7f8fb">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon.svg">
+  <meta name="app-version" content="v3.0">
+  <title>快读领读器</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --ink: #111827;
+      --muted: #637083;
+      --line: #d9dee8;
+      --accent: #1f7a6d;
+      --accent-2: #d94f3d;
+      --focus: #ffe16a;
+      --sentence: rgba(31, 122, 109, 0.10);
+      --paragraph: transparent;
+      --focus-ring: rgba(31, 122, 109, 0.18);
+      --shadow: 0 10px 24px rgba(24, 32, 45, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(31, 122, 109, 0.06), transparent 280px),
+        var(--bg);
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .app {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      min-height: 100vh;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px clamp(16px, 4vw, 42px) 10px;
+      border-bottom: 1px solid rgba(217, 222, 232, 0.75);
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(14px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(19px, 2.4vw, 26px);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .stats {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .stat-strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) minmax(280px, 520px) minmax(220px, 1fr);
+      align-items: center;
+      gap: 14px;
+      padding: 10px clamp(16px, 4vw, 42px);
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 49px;
+      z-index: 9;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .control-group.import {
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    .control-group.center {
+      justify-content: center;
+    }
+
+    .control-group.end {
+      justify-content: flex-end;
+    }
+
+    .file-label,
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 12px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      user-select: none;
+      transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+    }
+
+    button:hover,
+    .file-label:hover {
+      border-color: rgba(31, 122, 109, 0.55);
+      box-shadow: 0 0 0 4px var(--focus-ring);
+    }
+
+    button:active,
+    .file-label:active {
+      transform: translateY(1px);
+    }
+
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      min-width: 82px;
+      font-weight: 700;
+    }
+
+    button.danger {
+      color: var(--accent-2);
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .speed {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .speed label {
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .speed-value {
+      width: 58px;
+      text-align: right;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .speed-stepper {
+      display: none;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .font-control {
+      display: inline-grid;
+      grid-template-columns: 36px auto 36px;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .icon-button {
+      width: 36px;
+      min-width: 36px;
+      padding: 0;
+      font-weight: 800;
+    }
+
+    .font-readout {
+      min-width: 48px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress-wrap {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .mobile-tabs {
+      display: none;
+      gap: 8px;
+      padding: 10px 16px 0;
+      background: var(--bg);
+    }
+
+    .mobile-tab {
+      flex: 1;
+      min-height: 40px;
+      border-color: var(--line);
+      font-weight: 700;
+    }
+
+    .mobile-tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .progress {
+      position: relative;
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      background: #e7ebf2;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), #65a65e);
+    }
+
+    .percent {
+      width: 48px;
+      text-align: right;
+      color: var(--muted);
+      font-size: 13px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(260px, 390px) minmax(0, 1fr);
+      gap: 18px;
+      padding: 18px clamp(16px, 4vw, 42px) 34px;
+      min-height: 0;
+    }
+
+    .input-pane,
+    .reader-pane {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .input-pane {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: calc(100vh - 170px);
+    }
+
+    .pane-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100%;
+      min-height: 340px;
+      border: 0;
+      resize: none;
+      outline: 0;
+      padding: 16px;
+      color: var(--ink);
+      background: transparent;
+      font-size: 16px;
+      line-height: 1.75;
+    }
+
+    .input-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 12px 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .reader-pane {
+      position: relative;
+      overflow: hidden;
+      min-height: calc(100vh - 170px);
+    }
+
+    .reader {
+      height: calc(100vh - 170px);
+      overflow: auto;
+      padding: clamp(24px, 4vw, 46px);
+      scroll-behavior: smooth;
+      font-size: var(--reader-size, 18px);
+      line-height: 1.62;
+      letter-spacing: 0;
+      max-width: 42em;
+      margin: 0 auto;
+    }
+
+    .empty {
+      display: grid;
+      place-items: center;
+      min-height: 100%;
+      color: var(--muted);
+      text-align: center;
+      padding: 40px;
+    }
+
+    .token {
+      border-radius: 3px;
+      padding: 0 1px 1px;
+      transition: background 80ms linear, color 80ms linear, box-shadow 80ms linear;
+    }
+
+    .token.done {
+      color: #8b96a6;
+    }
+
+    .sentence-wrap {
+      border-radius: 5px;
+      padding: 0 2px 1px;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+      transition: background 80ms linear, box-shadow 80ms linear;
+    }
+
+    .token.paragraph-active {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .sentence-wrap.sentence-active {
+      background: var(--sentence);
+      background-color: var(--sentence);
+      box-shadow: 0 0 0 3px var(--sentence);
+    }
+
+    .sentence-wrap.sentence-active .token {
+      background-image: linear-gradient(to top, rgba(31, 122, 109, 0.16) 42%, transparent 42%);
+    }
+
+    .token.done.sentence-active {
+      color: #415061;
+    }
+
+    .token.active {
+      color: inherit;
+      background: transparent;
+      box-shadow: none;
+      font-weight: inherit;
+    }
+
+    .token.punctuation {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .reader:focus {
+      outline: 0;
+    }
+
+    .settings {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .settings input {
+      width: 76px;
+      height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 9px;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    @media (max-width: 940px) {
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+        padding: 9px 16px 7px;
+      }
+
+      .controls {
+        top: 65px;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 8px 16px 9px;
+      }
+
+      .control-group,
+      .control-group.center,
+      .control-group.end {
+        justify-content: stretch;
+      }
+
+      .control-group > button,
+      .file-label {
+        flex: 1;
+      }
+
+      .mobile-tabs {
+        display: flex;
+        position: sticky;
+        top: 223px;
+        z-index: 8;
+      }
+
+      main {
+        grid-template-columns: 1fr;
+        padding: 10px 16px 24px;
+      }
+
+      .input-pane {
+        min-height: 360px;
+      }
+
+      .reader-pane,
+      .reader {
+        min-height: 520px;
+        height: 60vh;
+      }
+
+      body.mobile-reading .input-pane {
+        display: none;
+      }
+
+      body:not(.mobile-reading) .reader-pane {
+        display: none;
+      }
+
+      body.mobile-reading .control-group.import {
+        display: none;
+      }
+
+      body.mobile-reading .mobile-tabs {
+        top: 182px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      body {
+        min-height: 100dvh;
+      }
+
+      .app {
+        min-height: 100dvh;
+      }
+
+      h1 {
+        display: none;
+      }
+
+      .stats {
+        flex-wrap: nowrap;
+        gap: 7px;
+        font-size: 10px;
+        overflow: hidden;
+        width: 100%;
+      }
+
+      .stats span {
+        white-space: nowrap;
+      }
+
+      header {
+        align-items: center;
+        flex-direction: row;
+        gap: 0;
+        padding: 4px 10px;
+      }
+
+      .controls {
+        top: 23px;
+        gap: 4px;
+        padding: 4px 10px 5px;
+        font-size: 12px;
+      }
+
+      .control-group.import,
+      .control-group.end,
+      body:not(.mobile-reading) .control-group.end {
+        display: none;
+      }
+
+      body.mobile-reading .controls {
+        grid-template-columns: 1fr;
+        align-items: center;
+      }
+
+      body:not(.mobile-reading) .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .control-group {
+        gap: 4px;
+      }
+
+      .control-group.center > button {
+        flex: 0 0 auto;
+      }
+
+      .file-label,
+      button {
+        min-height: 24px;
+        border-radius: 5px;
+        padding: 0 6px;
+      }
+
+      button.primary {
+        min-width: 28px;
+        width: 30px;
+        height: 46px;
+        padding: 2px 0;
+        line-height: 1.05;
+        writing-mode: vertical-rl;
+        letter-spacing: 0;
+      }
+
+      .speed {
+        display: grid;
+        flex: 1 1 150px;
+        grid-template-columns: auto minmax(120px, 1fr) 40px;
+        gap: 5px;
+        min-width: 0;
+      }
+
+      .speed-stepper {
+        display: none;
+      }
+
+      .speed label {
+        font-size: 12px;
+      }
+
+      .speed-value {
+        width: 40px;
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .font-control {
+        flex: 0 0 auto;
+        grid-template-columns: 24px 24px 24px;
+        gap: 3px;
+        padding: 0 2px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #fff;
+      }
+
+      .icon-button {
+        width: 24px;
+        min-width: 24px;
+        min-height: 22px;
+        border: 0;
+        border-radius: 4px;
+        padding: 0;
+        font-size: 10px;
+      }
+
+      .font-readout {
+        min-width: 24px;
+        font-size: 11px;
+      }
+
+      input[type="range"] {
+        height: 18px;
+      }
+
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 4px;
+        border-radius: 999px;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        width: 16px;
+        height: 16px;
+        margin-top: -6px;
+      }
+
+      .progress {
+        height: 7px;
+      }
+
+      .progress-wrap {
+        grid-template-columns: 32px 22px;
+        gap: 4px;
+      }
+
+      .percent {
+        width: 30px;
+        font-size: 10px;
+      }
+
+      .mobile-tabs {
+        top: 76px;
+        gap: 5px;
+        padding: 6px 10px 0;
+      }
+
+      .mobile-tab {
+        min-height: 26px;
+        font-size: 13px;
+      }
+
+      .settings {
+        flex-wrap: wrap;
+        gap: 6px;
+        font-size: 12px;
+      }
+
+      .settings input {
+        width: 54px;
+        height: 28px;
+        border-radius: 6px;
+        padding: 0 7px;
+      }
+
+      textarea {
+        min-height: calc(100dvh - 250px);
+        font-size: 16px;
+        line-height: 1.68;
+        padding: 12px;
+      }
+
+      .input-pane {
+        min-height: calc(100dvh - 186px);
+      }
+
+      .reader {
+        font-size: var(--reader-size-mobile, 18px);
+        padding: 20px 17px 34px;
+        min-height: calc(100dvh - 186px);
+        height: calc(100dvh - 186px);
+        line-height: 1.56;
+        max-width: 26em;
+      }
+
+      .reader-pane {
+        min-height: calc(100dvh - 186px);
+      }
+
+      body.mobile-reading .reader {
+        min-height: calc(100dvh - 132px);
+        height: auto;
+        overflow: visible;
+      }
+
+      body.mobile-reading .reader-pane {
+        min-height: calc(100dvh - 132px);
+        overflow: visible;
+      }
+
+      body.mobile-reading .mobile-tabs {
+        top: 49px;
+      }
+
+      body.mobile-reading.is-playing header,
+      body.mobile-reading.is-playing .controls,
+      body.mobile-reading.is-playing .mobile-tabs {
+        display: none;
+      }
+
+      body.mobile-reading.is-playing main {
+        padding-top: 0;
+      }
+
+      .pane-title {
+        align-items: center;
+        flex-direction: row;
+        padding: 7px 9px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="stats">
+        <span>字数 <span class="stat-strong" id="charCount">0</span></span>
+        <span>预计 <span class="stat-strong" id="eta">0:00</span></span>
+        <span>位置 <span class="stat-strong" id="position">0 / 0</span></span>
+      </div>
+    </header>
+
+    <section class="controls" aria-label="阅读控制">
+      <div class="control-group import">
+        <label class="file-label" title="上传 TXT">
+          <span>上传</span>
+          <input id="fileInput" type="file" accept=".txt,text/plain">
+        </label>
+        <button id="pasteText" type="button" title="从剪贴板粘贴">粘贴</button>
+        <button id="loadSample" type="button" title="载入当前文章">载入文章</button>
+      </div>
+
+      <div class="control-group center">
+        <button class="primary" id="playPause" type="button">开始</button>
+        <button class="danger" id="reset" type="button">重置</button>
+        <div class="speed">
+          <label for="speed">倍速</label>
+          <input id="speed" type="range" min="0.5" max="10" step="0.1" value="3">
+          <output class="speed-value" id="speedValue">3.0x</output>
+        </div>
+        <div class="speed-stepper" aria-label="倍速调节">
+          <button class="icon-button" id="speedDown" type="button" title="降低倍速">-</button>
+          <output class="speed-value" id="speedStepValue">3.0x</output>
+          <button class="icon-button" id="speedUp" type="button" title="提高倍速">+</button>
+        </div>
+        <div class="font-control" aria-label="字号调节">
+          <button class="icon-button" id="fontDown" type="button" title="缩小字号">A-</button>
+          <output class="font-readout" id="fontReadout">18</output>
+          <button class="icon-button" id="fontUp" type="button" title="放大字号">A+</button>
+        </div>
+      </div>
+
+      <div class="control-group end">
+        <div class="progress-wrap">
+          <div class="progress" id="progress" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="percent" id="percent">0%</div>
+        </div>
+      </div>
+    </section>
+
+    <nav class="mobile-tabs" aria-label="手机视图切换">
+      <button class="mobile-tab active" id="showInput" type="button">文本</button>
+      <button class="mobile-tab" id="showReader" type="button">阅读</button>
+    </nav>
+
+    <main>
+      <section class="input-pane">
+        <div class="pane-title">
+          <span>文本</span>
+          <div class="settings">
+            <label for="baseCpm">基准字/分钟</label>
+            <input id="baseCpm" type="number" min="100" max="2000" step="50" value="450">
+            <label for="readerSize">字号</label>
+            <input id="readerSize" type="number" min="16" max="48" step="1" value="18">
+          </div>
+        </div>
+        <textarea id="textInput" placeholder="把文章粘贴到这里，或上传 TXT 文件。"></textarea>
+        <div class="input-actions">
+          <button id="clearText" type="button">清空</button>
+          <button id="renderText" type="button">生成</button>
+        </div>
+      </section>
+
+      <section class="reader-pane">
+        <div class="reader" id="reader" tabindex="0">
+          <div class="empty">粘贴文本后点击生成</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const sampleText = `周五比亚迪破位下跌，作为总市值破万亿的超级明星股，持仓比亚迪的股民数量极多，后台充斥着大量焦虑留言，都是问我咋看的。我通常不点评个股，但我6月10日还真提过一嘴比亚迪，其实当时说的是小米和汽车行业的困境，我直说了不看好，要小心补跌。
+这一波赛力斯高位回撤66%，小米回撤65%，小鹏回撤59%，理想回撤75%，零跑回撤56%，广汽回撤75%，上汽回撤53%，汽车整车指数2026年下跌29%，几乎是杀的最狠的几个行业之一，你这样对比起来看的话比亚迪今年跌20%，里面抱团资金能熬到6月底再崩已经是狠顽强了。
+其实上半年就已经预警过好几次了，汽车行业面临日渐明显的产能过剩，今年补贴退潮，国内市场萎靡，全靠出口增长来勉强消化产能。但接下来的情况不容乐观，一个是欧洲一直在搞小动作贸易保护，汽车就是被针对的对象；另一个国产汽车的产能还在爬坡，前几年投资的陆续落地，不好卖的同时产量还在增加，后续销售压力还会增加。
+比亚迪比其他车厂好的一点是他们的电池是自产的，这很大程度缓解了成本压力，其他电动车厂利润都被极限压榨。有个数据你们了解一下：电池的毛利润率在23-25%左右，净利润率17-18%；整车厂的毛利润率16-18%，净利润只有可怜的5%左右。
+现在车企不堪重负，考虑采用国轩、欣旺达、中航等二线电池品牌来替代宁德时代，曾毓群6月上旬接受《财经》采访就不点名抨击车企使用低价质次的电池，可靠性只有宁德时代的60-70%，靠低价抢生意。
+很明显，电动车内卷的残酷性已经开始向上游传导了。
+还有很多读者留言担心宁德时代会不会也被车市冲击？会的，今年已经有影响了，国内低端产品价格逐年下跌，毛利率被压缩。但宁德时代业务线比较均衡，他们在海外市占率近40%，全球第一，可以避开国内市场的漩涡。另外这几年储能市场增速很快，消化了大量产能。所以宁德时代没被征兵办拉去给ai当血包，凑合能维持住上升趋势。
+所以简单总结一下观点就是避开整车厂，起码观望到年底，悲观的话产业低谷可能有1-2年，谨慎抄底。电池的情况要好一些，未来靠储能市场分担消化。
+……
+世界杯小组赛临近尾声，只差今晚最后一轮。
+亚洲的队伍高开低走，目前只有日本提前晋级，但是淘汰赛对手是巴西，签运确实差，但既然喊出目标是夺冠，那就应该有击败巴西的勇气。两队去年底踢过一场友谊赛，日本3:2逆转了巴西，也是历史首胜，但友谊赛和世界杯淘汰赛不是一回事。这场比赛我要看直播。
+另一个大概率晋级的亚洲队是伊朗，他们小组赛连平3场，积三分，目前在12个小组第三里排第6，前8名晋级，概率起码有8成，晋级后的对手是比利时，估计也就到这了。
+最滑稽的是韩国，本来他们觉得自己9成概率晋级，但德国意外的输给了厄瓜多尔，导致韩国在12个小组第三里排第8，晋级概率只有不到15%，除非今晚出现奇迹，不然基本凉了。韩国网友现在吐槽被德国做局了，怪他们没有正常虐菜，放水了。
+哦对了，网红的佛得角小组赛连续3场平局，也晋级了淘汰赛，他们对阵梅西的阿根廷。40岁门将沃齐尼亚最新社媒平台粉丝量已经增至1700万，只要佛得角能把阿根廷拖进点球大战，沃齐尼亚扑出梅西点球获胜晋级，能涨到5000万，我说的。
+……
+上周有读者问我们家给孩子都报了啥课，我们没报文化补习，从小学一年级坚持到现在的只有街舞课。学的是hiphop舞种，平时一周两节课，寒假暑假回老家，不上课。5年下来学费大概花了20多万，这个主要是北京这边房租贵，如果是三四线城市肯定要便宜很多，但三四线城市的舞蹈老师水平没北京这边的好。
+之前有读者说学街舞没啥出路，确实，没打算靠这个吃饭，但其实那么多孩子学弹钢琴，学拉小提琴，最后长大靠这个谋生的也不多。我觉得学街舞的孩子普遍比较时尚、阳光、自信，有审美，这就是我希望我儿子具备的特质，另外多少也能锻炼锻炼身体，跳舞需要磨练对身体的控制，他现在全身都有些肌肉。
+放一段最新练习视频，点击可以放大全屏看，已经跳的有点样子了。现在还是个小孩，等过几年长到186cm，再跳起来效果会更好。我希望他以后能早点谈恋爱结婚。`;
+
+    const els = {
+      fileInput: document.getElementById("fileInput"),
+      pasteText: document.getElementById("pasteText"),
+      loadSample: document.getElementById("loadSample"),
+      playPause: document.getElementById("playPause"),
+      reset: document.getElementById("reset"),
+      speed: document.getElementById("speed"),
+      speedValue: document.getElementById("speedValue"),
+      speedDown: document.getElementById("speedDown"),
+      speedUp: document.getElementById("speedUp"),
+      speedStepValue: document.getElementById("speedStepValue"),
+      progress: document.getElementById("progress"),
+      progressFill: document.getElementById("progressFill"),
+      percent: document.getElementById("percent"),
+      showInput: document.getElementById("showInput"),
+      showReader: document.getElementById("showReader"),
+      textInput: document.getElementById("textInput"),
+      renderText: document.getElementById("renderText"),
+      clearText: document.getElementById("clearText"),
+      reader: document.getElementById("reader"),
+      charCount: document.getElementById("charCount"),
+      eta: document.getElementById("eta"),
+      position: document.getElementById("position"),
+      baseCpm: document.getElementById("baseCpm"),
+      readerSize: document.getElementById("readerSize"),
+      fontDown: document.getElementById("fontDown"),
+      fontUp: document.getElementById("fontUp"),
+      fontReadout: document.getElementById("fontReadout")
+    };
+
+    const state = {
+      tokens: [],
+      spans: [],
+      sentenceEls: [],
+      sentenceIds: [],
+      paragraphIds: [],
+      activeSentence: -1,
+      activeParagraph: -1,
+      index: 0,
+      running: false,
+      raf: 0,
+      lastTime: 0,
+      carry: 0
+    };
+
+    const punctuation = /^[\s，。！？、；：,.!?;:…《》“”‘’（）()【】\[\]—-]+$/;
+    const sentenceEnd = /[，,、。！？!?；;：:…]/;
+
+    function tokenize(text) {
+      const parts = [];
+      const normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      if (window.Intl && Intl.Segmenter) {
+        const segmenter = new Intl.Segmenter("zh-CN", { granularity: "word" });
+        for (const item of segmenter.segment(normalized)) {
+          pushSegment(parts, item.segment);
+        }
+      } else {
+        for (const char of normalized) pushSegment(parts, char);
+      }
+      return parts.filter(Boolean);
+    }
+
+    function pushSegment(parts, segment) {
+      if (!segment) return;
+      if (segment === "\n") {
+        parts.push("\n");
+        return;
+      }
+      const chunks = segment.split(/(\n)/);
+      for (const chunk of chunks) {
+        if (!chunk) continue;
+        if (chunk === "\n") {
+          parts.push(chunk);
+        } else if (/^[A-Za-z0-9_./:%+-]+$/.test(chunk)) {
+          parts.push(chunk);
+        } else {
+          for (const char of chunk) parts.push(char);
+        }
+      }
+    }
+
+    function render() {
+      pause();
+      state.tokens = tokenize(els.textInput.value.trim());
+      state.index = 0;
+      state.carry = 0;
+      els.reader.innerHTML = "";
+      state.spans = [];
+      state.sentenceEls = [];
+      state.sentenceIds = assignSentenceIds(state.tokens);
+      state.paragraphIds = assignParagraphIds(state.tokens);
+      state.activeSentence = -1;
+      state.activeParagraph = -1;
+
+      if (!state.tokens.length) {
+        els.reader.innerHTML = '<div class="empty">粘贴文本后点击生成</div>';
+        updateStats();
+        return;
+      }
+
+      const frag = document.createDocumentFragment();
+      let sentenceWrap = null;
+      let currentSentenceId = -1;
+      state.tokens.forEach((token, i) => {
+        if (token === "\n") {
+          frag.appendChild(document.createElement("br"));
+          sentenceWrap = null;
+          currentSentenceId = -1;
+          return;
+        }
+        const sentenceId = state.sentenceIds[i];
+        if (!sentenceWrap || sentenceId !== currentSentenceId) {
+          sentenceWrap = document.createElement("span");
+          sentenceWrap.className = "sentence-wrap";
+          sentenceWrap.dataset.sentence = String(sentenceId);
+          state.sentenceEls[sentenceId] = sentenceWrap;
+          frag.appendChild(sentenceWrap);
+          currentSentenceId = sentenceId;
+        }
+        const span = document.createElement("span");
+        span.className = "token" + (punctuation.test(token) ? " punctuation" : "");
+        span.textContent = token;
+        span.dataset.index = String(i);
+        span.dataset.sentence = String(sentenceId);
+        span.dataset.paragraph = String(state.paragraphIds[i]);
+        span.addEventListener("click", () => jumpTo(i));
+        state.spans[i] = span;
+        sentenceWrap.appendChild(span);
+      });
+      els.reader.appendChild(frag);
+      setActive(0, true);
+      updateStats();
+      showPanel("reader");
+    }
+
+    function showPanel(panel) {
+      const reading = panel === "reader";
+      document.body.classList.toggle("mobile-reading", reading);
+      els.showInput.classList.toggle("active", !reading);
+      els.showReader.classList.toggle("active", reading);
+    }
+
+    function assignSentenceIds(tokens) {
+      const ids = [];
+      let sentence = 0;
+      let hasContent = false;
+      tokens.forEach((token, i) => {
+        ids[i] = sentence;
+        if (token !== "\n" && !punctuation.test(token)) hasContent = true;
+        if ((token === "\n" && hasContent) || sentenceEnd.test(token)) {
+          sentence++;
+          hasContent = false;
+        }
+      });
+      return ids;
+    }
+
+    function assignParagraphIds(tokens) {
+      const ids = [];
+      let paragraph = 0;
+      let hasContent = false;
+      tokens.forEach((token, i) => {
+        ids[i] = paragraph;
+        if (token !== "\n" && !punctuation.test(token)) hasContent = true;
+        if (token === "\n" && hasContent) {
+          paragraph++;
+          hasContent = false;
+        }
+      });
+      return ids;
+    }
+
+    function visibleTokenCount() {
+      return state.tokens.filter(token => token !== "\n").length;
+    }
+
+    function activeVisiblePosition() {
+      let count = 0;
+      for (let i = 0; i <= state.index && i < state.tokens.length; i++) {
+        if (state.tokens[i] !== "\n") count++;
+      }
+      return count;
+    }
+
+    function readingUnitsPerSecond() {
+      const base = clamp(Number(els.baseCpm.value) || 450, 100, 2000);
+      const speed = Number(els.speed.value);
+      return (base * speed) / 60;
+    }
+
+    function play() {
+      if (!state.tokens.length) render();
+      if (!state.tokens.length || state.running) return;
+      state.running = true;
+      document.body.classList.add("is-playing");
+      state.lastTime = performance.now();
+      els.playPause.textContent = "暂停";
+      state.raf = requestAnimationFrame(tick);
+    }
+
+    function pause() {
+      state.running = false;
+      document.body.classList.remove("is-playing");
+      cancelAnimationFrame(state.raf);
+      els.playPause.textContent = "开始";
+    }
+
+    function tick(now) {
+      if (!state.running) return;
+      const elapsed = Math.min(0.12, (now - state.lastTime) / 1000);
+      state.lastTime = now;
+      state.carry += elapsed * readingUnitsPerSecond();
+      let steps = Math.floor(state.carry);
+      if (steps > 0) {
+        state.carry -= steps;
+        advance(steps);
+      }
+      state.raf = requestAnimationFrame(tick);
+    }
+
+    function advance(steps) {
+      let next = state.index;
+      while (steps > 0 && next < state.tokens.length - 1) {
+        next++;
+        if (state.tokens[next] !== "\n") steps--;
+      }
+      setActive(next);
+      if (state.index >= state.tokens.length - 1) pause();
+    }
+
+    function jumpTo(index) {
+      pause();
+      setActive(clamp(index, 0, state.tokens.length - 1), true);
+    }
+
+    function setActive(index, immediate = false) {
+      const previousIndex = state.index;
+      const old = state.spans[state.index];
+      if (old) old.classList.remove("active");
+      state.index = index;
+      updateDoneRange(previousIndex, state.index);
+
+      const current = state.spans[state.index] || findNextSpan(state.index) || findPreviousSpan(state.index);
+      if (current) {
+        setActiveSentence(Number(current.dataset.sentence));
+        current.classList.add("active");
+        keepActiveInView(current, immediate);
+      }
+      updateStats();
+    }
+
+    function updateDoneRange(from, to) {
+      if (to > from) {
+        for (let i = from; i < to; i++) {
+          if (state.spans[i]) state.spans[i].classList.add("done");
+        }
+        return;
+      }
+      if (to < from) {
+        for (let i = to; i <= from; i++) {
+          if (state.spans[i]) state.spans[i].classList.remove("done");
+        }
+      }
+    }
+
+    function keepActiveInView(element, immediate = false) {
+      if (usesPageScroll()) {
+        keepActiveInWindow(element);
+        return;
+      }
+      const readerRect = els.reader.getBoundingClientRect();
+      const activeRect = element.getBoundingClientRect();
+      const topGuard = readerRect.top + readerRect.height * (state.running ? 0.30 : 0.28);
+      const bottomGuard = readerRect.top + readerRect.height * (state.running ? 0.46 : 0.58);
+      const mustScroll = activeRect.top < topGuard || activeRect.bottom > bottomGuard;
+      if (!mustScroll && !immediate) return;
+
+      const readerTop = els.reader.scrollTop;
+      const targetRatio = state.running ? 0.34 : 0.40;
+      const targetTop = Math.max(0, readerTop + activeRect.top - readerRect.top - readerRect.height * targetRatio);
+      if (state.running || immediate) {
+        els.reader.scrollTop = targetTop;
+      } else {
+        els.reader.scrollTo({ top: targetTop, behavior: "smooth" });
+      }
+    }
+
+    function usesPageScroll() {
+      return window.matchMedia("(max-width: 940px)").matches;
+    }
+
+    function keepActiveInWindow(element) {
+      const activeRect = element.getBoundingClientRect();
+      const playing = document.body.classList.contains("is-playing");
+      const tabsRect = document.querySelector(".mobile-tabs").getBoundingClientRect();
+      const topLimit = playing ? window.innerHeight * 0.25 : Math.max(0, tabsRect.bottom + 12);
+      const bottomLimit = window.innerHeight * (playing ? 0.62 : 0.72);
+      const mustScroll = activeRect.top < topLimit || activeRect.bottom > bottomLimit || state.running;
+      if (!mustScroll) return;
+
+      const targetTop = Math.max(0, window.scrollY + activeRect.top - topLimit - (playing ? 0 : (bottomLimit - topLimit) * 0.24));
+      window.scrollTo({ top: targetTop, behavior: state.running ? "auto" : "smooth" });
+    }
+
+    function setActiveSentence(sentenceId) {
+      if (sentenceId === state.activeSentence) return;
+      const previous = state.sentenceEls[state.activeSentence];
+      if (previous) previous.classList.remove("sentence-active");
+      const next = state.sentenceEls[sentenceId];
+      if (next) next.classList.add("sentence-active");
+      state.activeSentence = sentenceId;
+    }
+
+    function setActiveParagraph(paragraphId) {
+      if (paragraphId === state.activeParagraph) return;
+      state.spans.forEach(span => {
+        if (!span) return;
+        span.classList.toggle("paragraph-active", Number(span.dataset.paragraph) === paragraphId);
+      });
+      state.activeParagraph = paragraphId;
+    }
+
+    function findNextSpan(index) {
+      for (let i = index + 1; i < state.spans.length; i++) {
+        if (state.spans[i]) return state.spans[i];
+      }
+      return null;
+    }
+
+    function findPreviousSpan(index) {
+      for (let i = index - 1; i >= 0; i--) {
+        if (state.spans[i]) return state.spans[i];
+      }
+      return null;
+    }
+
+    function updateStats() {
+      const total = visibleTokenCount();
+      const pos = state.tokens.length ? Math.min(activeVisiblePosition(), total) : 0;
+      const pct = total ? Math.round((pos / total) * 100) : 0;
+      const seconds = total ? Math.ceil(total / readingUnitsPerSecond()) : 0;
+      els.charCount.textContent = String(total);
+      els.eta.textContent = formatTime(seconds);
+      els.position.textContent = `${pos} / ${total}`;
+      els.progressFill.style.width = `${pct}%`;
+      els.percent.textContent = `${pct}%`;
+      els.progress.setAttribute("aria-valuenow", String(pct));
+      els.speedValue.textContent = `${Number(els.speed.value).toFixed(1)}x`;
+      els.speedStepValue.textContent = `${Number(els.speed.value).toFixed(1)}x`;
+      const fontSize = clamp(Number(els.readerSize.value) || 18, 16, 48);
+      els.readerSize.value = String(fontSize);
+      els.fontReadout.textContent = String(fontSize);
+      document.documentElement.style.setProperty("--reader-size", `${fontSize}px`);
+      document.documentElement.style.setProperty("--reader-size-mobile", `${clamp(fontSize, 16, 38)}px`);
+    }
+
+    function formatTime(totalSeconds) {
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return `${minutes}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function progressToIndex(clientX) {
+      if (!state.tokens.length) return;
+      const rect = els.progress.getBoundingClientRect();
+      const ratio = clamp((clientX - rect.left) / rect.width, 0, 1);
+      const targetVisible = Math.round(ratio * visibleTokenCount());
+      let seen = 0;
+      for (let i = 0; i < state.tokens.length; i++) {
+        if (state.tokens[i] !== "\n") seen++;
+        if (seen >= targetVisible) {
+          jumpTo(i);
+          return;
+        }
+      }
+      jumpTo(state.tokens.length - 1);
+    }
+
+    els.playPause.addEventListener("click", () => state.running ? pause() : play());
+    els.reset.addEventListener("click", () => {
+      pause();
+      setActive(0, true);
+      els.reader.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    els.renderText.addEventListener("click", render);
+    els.showInput.addEventListener("click", () => showPanel("input"));
+    els.showReader.addEventListener("click", () => showPanel("reader"));
+    els.clearText.addEventListener("click", () => {
+      pause();
+      els.textInput.value = "";
+      render();
+    });
+    els.loadSample.addEventListener("click", () => {
+      els.textInput.value = sampleText;
+      render();
+    });
+    els.pasteText.addEventListener("click", async () => {
+      els.textInput.focus();
+      if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.clipboard) {
+        window.webkit.messageHandlers.clipboard.postMessage({ action: "paste" });
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        try {
+          window.__nativePasteFromApp(await navigator.clipboard.readText());
+        } catch (_error) {
+          els.textInput.focus();
+        }
+      }
+    });
+    els.speed.addEventListener("input", updateStats);
+    els.speedDown.addEventListener("click", () => {
+      els.speed.value = String(clamp(Number(els.speed.value) - 0.5, 0.5, 10));
+      updateStats();
+    });
+    els.speedUp.addEventListener("click", () => {
+      els.speed.value = String(clamp(Number(els.speed.value) + 0.5, 0.5, 10));
+      updateStats();
+    });
+    els.baseCpm.addEventListener("input", updateStats);
+    els.readerSize.addEventListener("input", updateStats);
+    els.fontDown.addEventListener("click", () => {
+      els.readerSize.value = String(clamp((Number(els.readerSize.value) || 18) - 2, 16, 48));
+      updateStats();
+    });
+    els.fontUp.addEventListener("click", () => {
+      els.readerSize.value = String(clamp((Number(els.readerSize.value) || 18) + 2, 16, 48));
+      updateStats();
+    });
+    els.progress.addEventListener("click", event => progressToIndex(event.clientX));
+    els.progress.addEventListener("keydown", event => {
+      if (!state.tokens.length) return;
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        advance(Math.max(1, Math.round(visibleTokenCount() * 0.02)));
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        jumpTo(Math.max(0, state.index - Math.round(state.tokens.length * 0.02)));
+      }
+    });
+    els.fileInput.addEventListener("change", async event => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      els.textInput.value = await file.text();
+      render();
+      event.target.value = "";
+    });
+    document.addEventListener("keydown", event => {
+      if (event.target === els.textInput || event.target.tagName === "INPUT") return;
+      if (event.code === "Space") {
+        event.preventDefault();
+        state.running ? pause() : play();
+      }
+    });
+
+    window.__nativePasteFromApp = function(text) {
+      const target = els.textInput;
+      target.focus();
+      const start = target.selectionStart ?? target.value.length;
+      const end = target.selectionEnd ?? target.value.length;
+      target.value = target.value.slice(0, start) + text + target.value.slice(end);
+      const next = start + text.length;
+      target.setSelectionRange(next, next);
+      target.dispatchEvent(new Event("input", { bubbles: true }));
+      target.focus();
+    };
+
+    document.addEventListener("keydown", event => {
+      const isPaste = event.metaKey && !event.ctrlKey && !event.altKey && event.key.toLowerCase() === "v";
+      if (!isPaste || document.activeElement !== els.textInput) return;
+      if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.clipboard) {
+        event.preventDefault();
+        window.webkit.messageHandlers.clipboard.postMessage({ action: "paste" });
+      }
+    }, true);
+
+    render();
+
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js?v=3.0").catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
